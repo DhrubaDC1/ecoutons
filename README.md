@@ -1,73 +1,70 @@
-# React + TypeScript + Vite
+# Ecoutons 🎵
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, Spotify-like web application built with React, TypeScript, and Material UI. Ecoutons features a stunning "Liquid Glass" UI, real-time YouTube Music integration, and a fully responsive design.
 
-Currently, two official plugins are available:
+![Ecoutons Banner](public/logo.png)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+### 🎨 UI & Design
+- **Liquid Glass Aesthetic**: A premium dark-mode design with blurred transparencies, glassmorphism effects, and smooth animations.
+- **Responsive Layout**: Fully adaptive interface that works seamlessly on desktops, tablets, and mobile devices.
+- **Mobile Drawer**: Smooth hamburger menu navigation for smaller screens.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🎧 Playback & Audio
+- **YouTube Integration**: Powered by the **YouTube Data API v3** and **YouTube Iframe Player API** for a vast library of music.
+- **Custom Player**: A persistent bottom player bar with custom controls (Play, Pause, Seek, Volume) that bridges to a hidden YouTube player.
+- **Full Screen Mode**: An immersive full-screen player with a blurred dynamic background and a **simulated audio visualizer**.
 
-## Expanding the ESLint configuration
+### 🚀 Functionality
+- **Trending Music**: Automatically fetches and displays the latest trending music videos.
+- **Real-time Search**: Search for any song or artist directly from YouTube.
+- **Library Management**: Create custom playlists and "Like" your favorite songs.
+- **Personalization**:
+    - **Recently Played**: Tracks your listening history locally.
+    - **Recommended for You**: Smart recommendations based on your most-played artists.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Frontend**: [React](https://react.dev/) (v19), [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **UI Framework**: [Material UI (MUI)](https://mui.com/)
+- **Styling**: [Emotion](https://emotion.sh/), CSS Modules
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Routing**: [React Router](https://reactrouter.com/)
+- **API**: YouTube Data API v3
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 📦 Installation
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/DhrubaDC1/ecoutons.git
+    cd ecoutons
+    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3.  **Set up Environment Variables**
+    *   Open `src/services/api.ts` (Note: In a production app, use a `.env` file).
+    *   Ensure the `API_KEY` is set to your YouTube Data API key.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+4.  **Run the development server**
+    ```bash
+    npm run dev
+    ```
+
+5.  **Build for production**
+    ```bash
+    npm run build
+    ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
