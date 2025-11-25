@@ -2,7 +2,7 @@
 
 A modern, Spotify-like web application built with React, TypeScript, and Material UI. Ecoutons features a stunning "Liquid Glass" UI, real-time YouTube Music integration, and a fully responsive design.
 
-![Ecoutons Banner](public/logo.png)
+![Ecoutons Screenshot](public/app-screenshot.png)
 
 ## ✨ Features
 
