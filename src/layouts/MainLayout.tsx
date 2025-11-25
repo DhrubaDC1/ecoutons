@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import { Box, AppBar, Toolbar, IconButton, Drawer, useTheme, useMediaQuery } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
+import Sidebar from '../components/Sidebar';
+import Player from '../components/Player';
+
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  return (
+    <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+      {/* Mobile AppBar */}
+      {isMobile && (
+        <AppBar position="fixed" sx={{ bgcolor: 'black', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+          <Toolbar>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <Box component="img" src="/logo.png" sx={{ height: 30, display: 'none' }} /> {/* Placeholder for logo */}
+          </Toolbar>
+        </AppBar>
+      )}
+
+      {/* Sidebar (Desktop & Mobile Drawer) */}
+      <Box
+        component="nav"
+        sx={{ width: { md: 240 }, flexShrink: { md: 0 } }}
+      >
+        {/* Mobile Drawer */}
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'black' },
+          }}
+        >
+          <Sidebar onClose={() => setMobileOpen(false)} />
+        </Drawer>
+
+        {/* Desktop Sidebar */}
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', md: 'block' },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240, bgcolor: 'black', borderRight: '1px solid rgba(255,255,255,0.1)' },
+          }}
+          open
+        >
+          <Sidebar />
+        </Drawer>
+      </Box>
+
+      {/* Main Content */}
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          pt: { xs: 10, md: 3 }, // Add padding top for mobile app bar
+          pb: 12, // Space for player
+          overflowY: 'auto',
+          background: 'linear-gradient(180deg, #220000 0%, #000000 100%)', // Subtle red gradient
+          width: { xs: '100%', md: `calc(100% - 240px)` }
+        }}
+      >
+        {children}
+      </Box>
+
+      {/* Player */}
+      <Player />
+    </Box>
+  );
+};
+
+export default MainLayout;
