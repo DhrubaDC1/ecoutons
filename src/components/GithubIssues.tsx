@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Fab, Paper, Typography, List, ListItem, ListItemText, ListItemIcon, Chip, CircularProgress, Link } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Fab, Paper, Typography, List, ListItem, ListItemText, ListItemIcon, CircularProgress, Link } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
