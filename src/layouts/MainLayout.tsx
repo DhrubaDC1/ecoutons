@@ -7,6 +7,8 @@ import { Outlet } from 'react-router-dom';
 
 import { useAppTheme } from '../context/ThemeContext';
 
+import GithubIssues from '../components/GithubIssues';
+
 const MainLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
@@ -84,6 +86,9 @@ const MainLayout: React.FC = () => {
       >
         <Outlet />
       </Box>
+
+      {/* GitHub Issues Floating Icon */}
+      <GithubIssues />
 
       {/* Player */}
       <Player />
