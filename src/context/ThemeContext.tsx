@@ -6,6 +6,7 @@ interface ThemeContextType {
   currentTheme: ThemeColor;
   setTheme: (theme: ThemeColor) => void;
   gradient: string;
+  dynamicColor: string;
   setDynamicColor: (color: string) => void;
 }
 
@@ -44,7 +45,7 @@ export const CustomThemeProvider: React.FC<CustomThemeProviderProps> = ({ childr
   }
 
   return (
-    <ThemeContext.Provider value={{ currentTheme, setTheme: setCurrentTheme, gradient, setDynamicColor }}>
+    <ThemeContext.Provider value={{ currentTheme, setTheme: setCurrentTheme, gradient, dynamicColor, setDynamicColor }}>
       <MuiThemeProvider theme={theme}>
         {children}
       </MuiThemeProvider>

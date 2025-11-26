@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Typography, IconButton, Slider, Stack } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import PlayCircleFilledWhiteIcon from '@mui/icons-material/PlayCircleFilledWhite';
@@ -10,7 +10,9 @@ import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useAudio } from '../context/AudioContext';
+import { useAppTheme } from '../context/ThemeContext';
 import GlassCard from './GlassCard';
+import VisualizerBackground from './VisualizerBackground';
 
 interface FullScreenPlayerProps {
   open: boolean;
@@ -18,9 +20,7 @@ interface FullScreenPlayerProps {
 }
 
 const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) => {
-  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, currentTime, seekTo, duration, toggleLike, likedSongs } = useAudio();
-  const [visualizerBars, setVisualizerBars] = useState<number[]>(new Array(20).fill(10));
-
+  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, currentTime, seekTo, duration, toggleLike, likedSongs, frequencyData } = useAudio();
   const isLiked = currentTrack ? likedSongs.some(t => t.id === currentTrack.id) : false;
 
   const formatTime = (time: number) => {
@@ -29,18 +29,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) =>
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
-  // Simulated Visualizer Animation
-  useEffect(() => {
-    let interval: any;
-    if (open && isPlaying) {
-      interval = setInterval(() => {
-        setVisualizerBars(prev => prev.map(() => Math.random() * 80 + 20));
-      }, 100);
-    } else {
-      setVisualizerBars(new Array(20).fill(10));
-    }
-    return () => clearInterval(interval);
-  }, [open, isPlaying]);
+  const { dynamicColor } = useAppTheme();
 
   if (!currentTrack) return null;
 
@@ -63,52 +52,8 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) =>
             overflow: 'hidden'
           }}
         >
-          {/* Background Blur */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundImage: `url(${currentTrack.cover})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              filter: 'blur(80px) brightness(0.4)',
-              zIndex: -1
-            }}
-          />
-
-          {/* Simulated Visualizer Layer */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1,
-              width: '100%',
-              height: '400px',
-              zIndex: 0,
-              opacity: 0.5
-            }}
-          >
-            {visualizerBars.map((height, index) => (
-              <motion.div
-                key={index}
-                animate={{ height: `${height}%` }}
-                transition={{ duration: 0.2, ease: "easeInOut" }}
-                style={{
-                  width: '20px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                  borderRadius: '10px',
-                }}
-              />
-            ))}
-          </Box>
+          {/* Visualizer Background */}
+          <VisualizerBackground isPlaying={isPlaying} color={dynamicColor} frequencyData={frequencyData} />
 
           {/* Main Content */}
           <Box
