@@ -13,7 +13,6 @@ import {
   Box
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { useAudio } from '../context/AudioContext';
 import { type Track } from '../data/tracks';
 
@@ -22,6 +21,8 @@ interface AddToPlaylistDialogProps {
   onClose: () => void;
   track: Track | null;
 }
+
+import PlaylistThumbnail from './PlaylistThumbnail';
 
 const AddToPlaylistDialog: React.FC<AddToPlaylistDialogProps> = ({ open, onClose, track }) => {
   const { playlists, addToPlaylist, createPlaylist } = useAudio();
@@ -76,7 +77,11 @@ const AddToPlaylistDialog: React.FC<AddToPlaylistDialogProps> = ({ open, onClose
             {playlists.map((playlist) => (
               <ListItem key={playlist.id} disablePadding>
                 <ListItemButton onClick={() => handleAddToPlaylist(playlist.id)}>
-                  <ListItemIcon><MusicNoteIcon /></ListItemIcon>
+                  <ListItemIcon>
+                    <Box sx={{ width: 40, height: 40, overflow: 'hidden', borderRadius: 1 }}>
+                      <PlaylistThumbnail playlist={playlist} />
+                    </Box>
+                  </ListItemIcon>
                   <ListItemText 
                     primary={playlist.name} 
                     secondary={`${playlist.tracks.length} songs`} 
