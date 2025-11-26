@@ -1,20 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, CircularProgress } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, Grid, CircularProgress, IconButton, Menu, MenuItem } from '@mui/material';
 import GlassCard from '../components/GlassCard';
 import { type Track } from '../data/tracks';
 import { useAudio } from '../context/AudioContext';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import IconButton from '@mui/material/IconButton';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { fetchTrendingMusic, searchTracks } from '../services/api';
+import AddToPlaylistDialog from '../components/AddToPlaylistDialog';
 
 const Home: React.FC = () => {
   const [trending, setTrending] = useState<Track[]>([]);
   const [recommended, setRecommended] = useState<Track[]>([]);
   const [loading, setLoading] = useState(true);
-  const { playTrack, currentTrack, isPlaying, toggleLike, likedSongs, history } = useAudio();
+  const { playTrack, currentTrack, toggleLike, likedSongs, history } = useAudio();
+  
+  // Menu State
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, track: Track) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedTrack(track);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedTrack(null);
+  };
+
+  const handleAddToPlaylistClick = () => {
+    setAnchorEl(null);
+    setDialogOpen(true);
+  };
 
   const isLiked = (trackId: number | string) => likedSongs.some(t => t.id === trackId);
 
@@ -49,7 +68,7 @@ const Home: React.FC = () => {
     };
 
     loadData();
-  }, [history.length]); // Re-run if history length changes significantly (though usually on mount is enough)
+  }, [history.length]); // Re-run if history length changes significantly
 
   if (loading) {
     return (
@@ -71,8 +90,11 @@ const Home: React.FC = () => {
                 display: 'flex', 
                 alignItems: 'center', 
                 p: 0, 
+                width: '100%',
+                height: 80,
                 cursor: 'pointer',
                 position: 'relative',
+                overflow: 'hidden',
                 '&:hover .action-buttons': {
                   opacity: 1
                 }
@@ -110,26 +132,32 @@ const Home: React.FC = () => {
                 >
                   {isLiked(track.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                 </IconButton>
-                <Box
-                  sx={{
-                    bgcolor: 'primary.main',
-                    borderRadius: '50%',
-                    p: 1,
-                    boxShadow: 3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white'
-                  }}
-                  onClick={() => playTrack(track)}
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleMenuOpen(e, track)}
+                  sx={{ color: 'white' }}
                 >
-                  {currentTrack?.id === track.id && isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                </Box>
+                  <MoreVertIcon />
+                </IconButton>
               </Box>
             </GlassCard>
           </Grid>
         ))}
       </Grid>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleAddToPlaylistClick}>Add to Playlist</MenuItem>
+      </Menu>
+
+      <AddToPlaylistDialog 
+        open={dialogOpen} 
+        onClose={() => setDialogOpen(false)} 
+        track={selectedTrack} 
+      />
     </Box>
   );
 

@@ -3,14 +3,14 @@ import { Box, AppBar, Toolbar, IconButton, Drawer, useTheme, useMediaQuery } fro
 import MenuIcon from '@mui/icons-material/Menu';
 import Sidebar from '../components/Sidebar';
 import Player from '../components/Player';
+import { Outlet } from 'react-router-dom';
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
+import { useAppTheme } from '../context/ThemeContext';
 
-const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+const MainLayout: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
+  const { gradient } = useAppTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleDrawerToggle = () => {
@@ -18,7 +18,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden' }}>
       {/* Mobile AppBar */}
       {isMobile && (
         <AppBar position="fixed" sx={{ bgcolor: 'black', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
@@ -32,7 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             >
               <MenuIcon />
             </IconButton>
-            <Box component="img" src="/logo.png" sx={{ height: 30, display: 'none' }} /> {/* Placeholder for logo */}
+            <Box component="img" src="/logo.png" sx={{ height: 40, mr: 2 }} />
           </Toolbar>
         </AppBar>
       )}
@@ -78,11 +78,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           pt: { xs: 10, md: 3 }, // Add padding top for mobile app bar
           pb: 12, // Space for player
           overflowY: 'auto',
-          background: 'linear-gradient(180deg, #220000 0%, #000000 100%)', // Subtle red gradient
+          background: gradient, // Dynamic gradient
           width: { xs: '100%', md: `calc(100% - 240px)` }
         }}
       >
-        {children}
+        <Outlet />
       </Box>
 
       {/* Player */}

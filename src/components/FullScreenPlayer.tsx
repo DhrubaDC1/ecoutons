@@ -18,7 +18,7 @@ interface FullScreenPlayerProps {
 }
 
 const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) => {
-  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, progress, setProgress, duration, toggleLike, likedSongs } = useAudio();
+  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, currentTime, seekTo, duration, toggleLike, likedSongs } = useAudio();
   const [visualizerBars, setVisualizerBars] = useState<number[]>(new Array(20).fill(10));
 
   const isLiked = currentTrack ? likedSongs.some(t => t.id === currentTrack.id) : false;
@@ -165,9 +165,9 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) =>
             {/* Progress Bar */}
             <Box sx={{ width: '100%', maxWidth: 600, mb: 4 }}>
               <Slider
-                value={progress}
+                value={currentTime}
                 max={duration || 100}
-                onChange={(_, value) => setProgress(value as number)}
+                onChange={(_, value) => seekTo(value as number)}
                 sx={{
                   color: 'white',
                   height: 4,
@@ -185,7 +185,7 @@ const FullScreenPlayer: React.FC<FullScreenPlayerProps> = ({ open, onClose }) =>
                 }}
               />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                <Typography variant="caption" color="text.secondary">{formatTime(progress)}</Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>{formatTime(currentTime)}</Typography>
                 <Typography variant="caption" color="text.secondary">{formatTime(duration)}</Typography>
               </Box>
             </Box>

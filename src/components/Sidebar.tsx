@@ -8,6 +8,12 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
 
+import ThemeSelector from './ThemeSelector';
+
+import { Avatar, Button } from '@mui/material';
+import { useAuth } from '../context/AuthContext';
+import PersonIcon from '@mui/icons-material/Person';
+
 interface SidebarProps {
   onClose?: () => void;
 }
@@ -16,6 +22,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { createPlaylist, playlists } = useAudio();
+  const { user } = useAuth();
 
   const handleCreatePlaylist = () => {
     const name = `My Playlist #${playlists.length + 1}`;
@@ -30,12 +37,47 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose }) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <Box sx={{ width: 240, height: '100%', p: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Box sx={{ px: 2, mb: 2, cursor: 'pointer' }} onClick={() => navigate('/')}>
-        <Typography variant="h5" color="primary" fontWeight="bold">
-          Ecoutons
-        </Typography>
+    <Box sx={{ width: '100%', height: '100%', p: 2, display: 'flex', flexDirection: 'column', gap: 2, overflowX: 'hidden' }}>
+      <Box sx={{ px: 2, mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box onClick={() => handleNavigation('/')} sx={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box component="img" src="/logo.png" sx={{ height: 32, width: 32 }} />
+          <Typography variant="h5" color="primary" fontWeight="bold">
+            Ecoutons
+          </Typography>
+        </Box>
+        <ThemeSelector />
       </Box>
+
+      {/* User Profile Snippet */}
+      {user ? (
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2, 
+            px: 2, 
+            py: 1, 
+            mb: 1, 
+            borderRadius: 2, 
+            bgcolor: 'rgba(255,255,255,0.05)',
+            cursor: 'pointer',
+            '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
+          }}
+          onClick={() => handleNavigation('/profile')}
+        >
+          <Avatar src={user.avatar} alt={user.name} sx={{ width: 32, height: 32 }} />
+          <Typography variant="subtitle2" noWrap>{user.name}</Typography>
+        </Box>
+      ) : (
+        <Button 
+          variant="outlined" 
+          startIcon={<PersonIcon />} 
+          onClick={() => handleNavigation('/login')}
+          sx={{ mb: 2, mx: 2 }}
+        >
+          Log In
+        </Button>
+      )}
       
       <List>
         <ListItem disablePadding>

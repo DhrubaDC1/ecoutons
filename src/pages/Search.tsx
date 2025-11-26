@@ -1,20 +1,41 @@
 import React, { useState } from 'react';
-import { Box, Typography, TextField, InputAdornment, Grid, IconButton, CircularProgress } from '@mui/material';
+import { Box, Typography, InputBase, Grid, IconButton, CircularProgress, Menu, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import ClearIcon from '@mui/icons-material/Clear';
 import GlassCard from '../components/GlassCard';
 import { type Track } from '../data/tracks';
 import { useAudio } from '../context/AudioContext';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { searchTracks } from '../services/api';
+import AddToPlaylistDialog from '../components/AddToPlaylistDialog';
 
 const Search: React.FC = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Track[]>([]);
   const [loading, setLoading] = useState(false);
-  const { playTrack, currentTrack, isPlaying, toggleLike, likedSongs } = useAudio();
+  const { playTrack, currentTrack, toggleLike, likedSongs } = useAudio();
+  
+  // Menu State
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, track: Track) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedTrack(track);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedTrack(null);
+  };
+
+  const handleAddToPlaylistClick = () => {
+    setAnchorEl(null);
+    setDialogOpen(true);
+  };
 
   const isLiked = (trackId: number | string) => likedSongs.some(t => t.id === trackId);
 
@@ -32,52 +53,102 @@ const Search: React.FC = () => {
     }
   };
 
+  const handleClear = () => {
+    setQuery('');
+    setResults([]);
+  };
+
   const categories = [
-    { color: '#E91429', title: 'Pop' },
-    { color: '#27856A', title: 'Hip-Hop' },
-    { color: '#1E3264', title: 'Rock' },
-    { color: '#8D67AB', title: 'Indie' },
-    { color: '#E8115B', title: 'Latin' },
-    { color: '#148A08', title: 'Charts' },
-    { color: '#503750', title: 'Mood' },
-    { color: '#B02897', title: 'Party' },
+    { color: 'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 99%, #FECFEF 100%)', title: 'Pop', textColor: '#000' },
+    { color: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', title: 'Hip-Hop', textColor: '#000' },
+    { color: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)', title: 'Rock', textColor: '#000' },
+    { color: 'linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%)', title: 'Indie', textColor: '#000' },
+    { color: 'linear-gradient(120deg, #f093fb 0%, #f5576c 100%)', title: 'Latin', textColor: '#fff' },
+    { color: 'linear-gradient(120deg, #89f7fe 0%, #66a6ff 100%)', title: 'Charts', textColor: '#000' },
+    { color: 'linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%)', title: 'Mood', textColor: '#000' },
+    { color: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)', title: 'Party', textColor: '#fff' },
   ];
 
+  const handleCategoryClick = async (category: string) => {
+    setQuery(category);
+    setLoading(true);
+    try {
+      const data = await searchTracks(category);
+      setResults(data);
+    } catch (error) {
+      console.error("Search failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Box>
-      <Box sx={{ mb: 4 }}>
-        <TextField
-          fullWidth
-          placeholder="What do you want to listen to? (Press Enter)"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleSearch}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ color: 'text.primary' }} />
-              </InputAdornment>
-            ),
-            sx: {
-              bgcolor: 'white',
-              borderRadius: 5,
-              color: 'black',
-              '& .MuiInputBase-input': { p: 1.5 }
+    <Box sx={{ pb: 10 }}>
+      {/* Apple-style Large Header */}
+      <Typography variant="h2" fontWeight="bold" sx={{ mb: 4, letterSpacing: '-0.02em' }}>
+        Search
+      </Typography>
+
+      {/* Glassmorphic Search Bar */}
+      <Box sx={{ mb: 6, position: 'relative' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            bgcolor: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: 4,
+            p: '12px 24px',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              bgcolor: 'rgba(255, 255, 255, 0.15)',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+            },
+            '&:focus-within': {
+              bgcolor: 'rgba(255, 255, 255, 0.2)',
+              border: '1px solid rgba(255, 255, 255, 0.5)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+              transform: 'scale(1.01)'
             }
           }}
-        />
+        >
+          <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)', mr: 2, fontSize: 32 }} />
+          <InputBase
+            fullWidth
+            placeholder="Artists, Songs, Lyrics, and more"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleSearch}
+            sx={{
+              color: 'white',
+              fontSize: '1.5rem',
+              fontWeight: 500,
+              '& ::placeholder': {
+                color: 'rgba(255,255,255,0.5)',
+                opacity: 1
+              }
+            }}
+          />
+          {query && (
+            <IconButton onClick={handleClear} sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              <ClearIcon />
+            </IconButton>
+          )}
+        </Box>
       </Box>
 
       {loading && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-          <CircularProgress color="primary" />
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
+          <CircularProgress color="inherit" size={60} thickness={2} />
         </Box>
       )}
 
-      {results.length > 0 && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Top Results</Typography>
-          <Grid container spacing={2}>
+      {results.length > 0 ? (
+        <Box sx={{ mb: 6 }}>
+          <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>Top Results</Typography>
+          <Grid container spacing={3}>
             {results.map((track) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={track.id}>
                 <GlassCard 
@@ -88,9 +159,8 @@ const Search: React.FC = () => {
                     p: 0, 
                     cursor: 'pointer',
                     position: 'relative',
-                    '&:hover .action-buttons': {
-                      opacity: 1
-                    }
+                    overflow: 'hidden',
+                    '&:hover .action-buttons': { opacity: 1 }
                   }}
                   onClick={() => playTrack(track)}
                 >
@@ -98,18 +168,18 @@ const Search: React.FC = () => {
                     component="img"
                     src={track.cover}
                     alt={track.title}
-                    sx={{ width: 80, height: 80, objectFit: 'cover' }} 
+                    sx={{ width: 100, height: 100, objectFit: 'cover' }} 
                   />
-                  <Box sx={{ ml: 2, flexGrow: 1, overflow: 'hidden' }}>
-                    <Typography variant="h6" noWrap sx={{ fontSize: '1rem', fontWeight: 'bold' }}>{track.title}</Typography>
-                    <Typography variant="caption" color="text.secondary" noWrap>{track.artist}</Typography>
+                  <Box sx={{ ml: 2.5, flexGrow: 1, overflow: 'hidden', py: 2, pr: 2 }}>
+                    <Typography variant="h6" noWrap sx={{ fontSize: '1.1rem', fontWeight: 'bold', mb: 0.5 }}>{track.title}</Typography>
+                    <Typography variant="body2" color="text.secondary" noWrap>{track.artist}</Typography>
                   </Box>
                   
                   <Box 
                     className="action-buttons"
                     sx={{ 
                       position: 'absolute', 
-                      right: 8, 
+                      right: 16, 
                       opacity: currentTrack?.id === track.id ? 1 : 0, 
                       transition: 'opacity 0.2s',
                       display: 'flex',
@@ -119,66 +189,93 @@ const Search: React.FC = () => {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <IconButton 
-                      size="small" 
                       onClick={() => toggleLike(track)}
-                      color={isLiked(track.id) ? "primary" : "default"}
+                      sx={{ 
+                        color: isLiked(track.id) ? '#E91429' : 'white',
+                        bgcolor: 'rgba(0,0,0,0.3)',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' }
+                      }}
                     >
                       {isLiked(track.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
                     </IconButton>
-                    <Box
-                      sx={{
-                        bgcolor: 'primary.main',
-                        borderRadius: '50%',
-                        p: 1,
-                        boxShadow: 3,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white'
+                    <IconButton
+                      onClick={(e) => handleMenuOpen(e, track)}
+                      sx={{ 
+                        color: 'white',
+                        bgcolor: 'rgba(0,0,0,0.3)',
+                        '&:hover': { bgcolor: 'rgba(0,0,0,0.5)' }
                       }}
-                      onClick={() => playTrack(track)}
                     >
-                      {currentTrack?.id === track.id && isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-                    </Box>
+                      <MoreVertIcon />
+                    </IconButton>
                   </Box>
                 </GlassCard>
               </Grid>
             ))}
           </Grid>
         </Box>
+      ) : (
+        !loading && (
+          <>
+            <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>Browse Categories</Typography>
+            <Grid container spacing={3}>
+              {categories.map((cat) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={cat.title}>
+                  <GlassCard 
+                    hoverEffect 
+                    onClick={() => handleCategoryClick(cat.title)}
+                    sx={{ 
+                      height: 200, 
+                      background: cat.color, 
+                      position: 'relative', 
+                      overflow: 'hidden',
+                      border: 'none',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      justifyContent: 'flex-start',
+                      p: 3,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <Typography variant="h5" fontWeight="900" sx={{ color: cat.textColor, zIndex: 2 }}>
+                      {cat.title}
+                    </Typography>
+                    
+                    {/* Decorative Circle */}
+                    <Box 
+                      sx={{ 
+                        position: 'absolute', 
+                        bottom: -20, 
+                        right: -20, 
+                        width: 120, 
+                        height: 120, 
+                        borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.2)',
+                        backdropFilter: 'blur(10px)',
+                        transform: 'rotate(25deg)',
+                      }} 
+                    />
+                  </GlassCard>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )
       )}
 
-      <Typography variant="h5" fontWeight="bold" sx={{ mb: 2 }}>Browse all</Typography>
-      <Grid container spacing={2}>
-        {categories.map((cat) => (
-          <Grid size={{ xs: 6, sm: 4, md: 3 }} key={cat.title}>
-            <GlassCard 
-              hoverEffect 
-              sx={{ 
-                height: 180, 
-                bgcolor: cat.color, 
-                position: 'relative', 
-                overflow: 'hidden',
-                border: 'none'
-              }}
-            >
-              <Typography variant="h5" fontWeight="bold">{cat.title}</Typography>
-              <Box 
-                sx={{ 
-                  position: 'absolute', 
-                  bottom: -10, 
-                  right: -10, 
-                  width: 100, 
-                  height: 100, 
-                  bgcolor: 'rgba(0,0,0,0.2)', 
-                  transform: 'rotate(25deg)',
-                  borderRadius: 2
-                }} 
-              />
-            </GlassCard>
-          </Grid>
-        ))}
-      </Grid>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleAddToPlaylistClick}>Add to Playlist</MenuItem>
+      </Menu>
+
+      <AddToPlaylistDialog 
+        open={dialogOpen} 
+        onClose={() => setDialogOpen(false)} 
+        track={selectedTrack} 
+      />
     </Box>
   );
 };
