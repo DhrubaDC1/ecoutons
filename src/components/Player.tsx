@@ -11,13 +11,17 @@ import { useAudio } from '../context/AudioContext';
 import FullScreenPlayer from './FullScreenPlayer';
 
 const Player: React.FC = () => {
-  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, progress, setProgress, duration } = useAudio();
+  const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, currentTime, seekTo, duration } = useAudio();
   const [isFullScreen, setIsFullScreen] = React.useState(false);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+  };
+
+  const handleSeek = (_: Event, newValue: number | number[]) => {
+    seekTo(newValue as number);
   };
 
   if (!currentTrack) {
@@ -49,10 +53,10 @@ const Player: React.FC = () => {
       <GlassCard 
         sx={{ 
           height: 90, 
-          width: '100%', 
+          width: { xs: '100%', md: 'calc(100% - 240px)' },
           position: 'fixed', 
           bottom: 0, 
-          left: 0, 
+          left: { xs: 0, md: 240 },
           right: 0, 
           borderRadius: 0, 
           borderTop: '1px solid rgba(255,255,255,0.1)',
@@ -94,12 +98,12 @@ const Player: React.FC = () => {
           <IconButton color="inherit" onClick={playNext}><SkipNextIcon /></IconButton>
         </Stack>
         <Stack direction="row" spacing={2} alignItems="center" sx={{ width: '100%', display: { xs: 'none', md: 'flex' } }}>
-          <Typography variant="caption">{formatTime(progress)}</Typography>
+          <Typography variant="caption">{formatTime(currentTime)}</Typography>
           <Slider 
             size="small" 
-            value={progress} 
+            value={currentTime} 
             max={duration || 100}
-            onChange={(_, value) => setProgress(value as number)}
+            onChange={handleSeek}
             sx={{ 
               color: 'white',
               '& .MuiSlider-thumb': {

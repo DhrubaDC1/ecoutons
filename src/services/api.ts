@@ -1,4 +1,4 @@
-import { type Track } from '../data/tracks';
+import { type Track, tracks } from '../data/tracks';
 
 const API_KEY = 'AIzaSyCQ0ijqIAj4OadkoWPB1BlPqLfPqj-oaUE';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
@@ -24,8 +24,8 @@ export const fetchTrendingMusic = async (): Promise<Track[]> => {
       duration: parseDuration(item.contentDetails.duration)
     }));
   } catch (error) {
-    console.error("Failed to fetch trending music", error);
-    return [];
+    console.error("Failed to fetch trending music, falling back to mock data", error);
+    return tracks;
   }
 };
 
@@ -50,8 +50,11 @@ export const searchTracks = async (query: string): Promise<Track[]> => {
       duration: 0 // Search endpoint doesn't return duration, would need a second call to videos endpoint
     }));
   } catch (error) {
-    console.error("Failed to search tracks", error);
-    return [];
+    console.error("Failed to search tracks, falling back to mock data", error);
+    return tracks.filter(t => 
+      t.title.toLowerCase().includes(query.toLowerCase()) || 
+      t.artist.toLowerCase().includes(query.toLowerCase())
+    );
   }
 };
 
