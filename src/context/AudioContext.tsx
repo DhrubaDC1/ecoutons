@@ -22,6 +22,7 @@ interface AudioContextType {
   removeFromPlaylist: (playlistId: string | number, trackId: string | number) => void;
   createPlaylist: (name: string) => void;
   deletePlaylist: (playlistId: string | number) => void;
+  updatePlaylist: (playlistId: string | number, updates: Partial<Playlist>) => void;
   playlists: Playlist[];
   toggleLike: (track: Track) => void;
   isLiked: (trackId: string | number) => boolean;
@@ -170,6 +171,17 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     saveToFirestore('playlists', newPlaylists);
   };
 
+  const updatePlaylist = (playlistId: string | number, updates: Partial<Playlist>) => {
+    const newPlaylists = playlists.map(p => {
+      if (p.id === playlistId) {
+        return { ...p, ...updates };
+      }
+      return p;
+    });
+    setPlaylists(newPlaylists);
+    saveToFirestore('playlists', newPlaylists);
+  };
+
   const addToPlaylist = (playlistId: string | number, track: Track) => {
     const newPlaylists = playlists.map(p => {
       if (p.id === playlistId) {
@@ -257,6 +269,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       removeFromPlaylist,
       createPlaylist,
       deletePlaylist,
+      updatePlaylist,
       playlists,
       toggleLike,
       isLiked,

@@ -10,6 +10,7 @@ export interface Track {
 export interface Playlist {
   id: number | string;
   name: string;
+  description?: string;
   tracks: Track[];
   cover?: string;
 }

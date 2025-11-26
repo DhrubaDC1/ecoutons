@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, Menu, MenuItem, Button } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, ListItemAvatar, Avatar, IconButton, Menu, MenuItem, Button, Dialog, DialogTitle, DialogContent, TextField, DialogActions } from '@mui/material';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import EditIcon from '@mui/icons-material/Edit';
+
+import PlaylistThumbnail from '../components/PlaylistThumbnail';
 
 const Playlist: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { playlists, deletePlaylist, removeFromPlaylist, playTrack } = useAudio();
+  const { playlists, deletePlaylist, removeFromPlaylist, playTrack, updatePlaylist } = useAudio();
   
   // Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [selectedTrackId, setSelectedTrackId] = useState<string | number | null>(null);
+
+  // Edit Dialog State
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editCover, setEditCover] = useState('');
 
   const playlist = playlists.find(p => p.id === Number(id) || p.id === id);
 
@@ -30,6 +38,24 @@ const Playlist: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this playlist?')) {
       deletePlaylist(playlist.id);
       navigate('/library');
+    }
+  };
+
+  const handleEditOpen = () => {
+    setEditName(playlist.name);
+    setEditDescription(playlist.description || '');
+    setEditCover(playlist.cover || '');
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSave = () => {
+    if (editName.trim()) {
+      updatePlaylist(playlist.id, {
+        name: editName,
+        description: editDescription,
+        cover: editCover
+      });
+      setIsEditDialogOpen(false);
     }
   };
 
@@ -53,14 +79,18 @@ const Playlist: React.FC = () => {
   return (
     <Box>
       <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 3, mb: 4, p: 3, bgcolor: '#282828', position: 'relative' }}>
-        <Box sx={{ width: 232, height: 232, bgcolor: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 5 }}>
-          <MusicNoteIcon sx={{ fontSize: 80, color: 'grey.500' }} />
+        <Box sx={{ width: 232, height: 232, bgcolor: '#333', boxShadow: 5, overflow: 'hidden' }}>
+          <PlaylistThumbnail playlist={playlist} />
         </Box>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="caption" fontWeight="bold">PLAYLIST</Typography>
           <Typography variant="h2" fontWeight="900" sx={{ my: 1 }}>{playlist.name}</Typography>
+          {playlist.description && <Typography variant="body1" color="text.secondary" sx={{ mb: 1 }}>{playlist.description}</Typography>}
           <Typography variant="subtitle2">{playlist.tracks.length} songs</Typography>
         </Box>
+        <IconButton onClick={handleEditOpen} title="Edit Details" sx={{ mr: 1 }}>
+          <EditIcon />
+        </IconButton>
         <IconButton onClick={handleDeletePlaylist} color="error" title="Delete Playlist">
           <DeleteIcon />
         </IconButton>
@@ -107,6 +137,40 @@ const Playlist: React.FC = () => {
       >
         <MenuItem onClick={handleRemoveTrack}>Remove from Playlist</MenuItem>
       </Menu>
+
+      <Dialog open={isEditDialogOpen} onClose={() => setIsEditDialogOpen(false)}>
+        <DialogTitle>Edit Playlist Details</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1, minWidth: 300 }}>
+            <TextField
+              label="Name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              fullWidth
+              autoFocus
+            />
+            <TextField
+              label="Description"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              fullWidth
+              multiline
+              rows={3}
+            />
+            <TextField
+              label="Cover Image URL"
+              value={editCover}
+              onChange={(e) => setEditCover(e.target.value)}
+              fullWidth
+              placeholder="https://example.com/image.jpg"
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+          <Button onClick={handleEditSave} variant="contained">Save</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

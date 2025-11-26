@@ -3,8 +3,9 @@ import { Box, Typography, Grid } from '@mui/material';
 import GlassCard from '../components/GlassCard';
 import { useAudio } from '../context/AudioContext';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import { useNavigate } from 'react-router-dom';
+
+import PlaylistThumbnail from '../components/PlaylistThumbnail';
 
 const Library: React.FC = () => {
   const { playlists, likedSongs } = useAudio();
@@ -51,14 +52,16 @@ const Library: React.FC = () => {
                 bgcolor: '#181818',
                 display: 'flex',
                 flexDirection: 'column',
-                justifyContent: 'center',
                 alignItems: 'center',
+                justifyContent: 'center',
                 cursor: 'pointer'
               }}
               onClick={() => navigate(`/playlist/${playlist.id}`)}
             >
-              <MusicNoteIcon sx={{ fontSize: 60, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" fontWeight="bold">{playlist.name}</Typography>
+              <Box sx={{ width: 140, height: 140, mb: 2, boxShadow: 3, borderRadius: 1, overflow: 'hidden' }}>
+                <PlaylistThumbnail playlist={playlist} />
+              </Box>
+              <Typography variant="h6" fontWeight="bold" noWrap sx={{ width: '90%', textAlign: 'center' }}>{playlist.name}</Typography>
               <Typography variant="caption" color="text.secondary">Playlist</Typography>
             </GlassCard>
           </Grid>
