@@ -1,6 +1,6 @@
 import { type Track, tracks } from '../data/tracks';
 
-const API_KEY = 'AIzaSyCQ0ijqIAj4OadkoWPB1BlPqLfPqj-oaUE';
+const API_KEY = 'AIzaSyA6xBe_Luc7cqKDXT0apsjEoRkh12EDNDw';
 const BASE_URL = 'https://www.googleapis.com/youtube/v3';
 
 export const fetchTrendingMusic = async (): Promise<Track[]> => {
