@@ -4,24 +4,24 @@ export type ThemeColor = 'Red' | 'Blue' | 'Green' | 'Purple' | 'Orange' | 'Dynam
 
 export const themeColors: Record<ThemeColor, { primary: string; gradient: string }> = {
   Red: {
-    primary: '#E50914',
-    gradient: 'linear-gradient(180deg, #220000 0%, #000000 100%)',
+    primary: '#FF1744', // More vibrant red
+    gradient: 'linear-gradient(180deg, #330000 0%, #000000 100%)',
   },
   Blue: {
-    primary: '#1E88E5',
-    gradient: 'linear-gradient(180deg, #001122 0%, #000000 100%)',
+    primary: '#2979FF', // More vibrant blue
+    gradient: 'linear-gradient(180deg, #001133 0%, #000000 100%)',
   },
   Green: {
-    primary: '#43A047',
-    gradient: 'linear-gradient(180deg, #002200 0%, #000000 100%)',
+    primary: '#00E676', // More vibrant green
+    gradient: 'linear-gradient(180deg, #003300 0%, #000000 100%)',
   },
   Purple: {
-    primary: '#8E24AA',
-    gradient: 'linear-gradient(180deg, #220022 0%, #000000 100%)',
+    primary: '#D500F9', // More vibrant purple
+    gradient: 'linear-gradient(180deg, #330033 0%, #000000 100%)',
   },
   Orange: {
-    primary: '#FB8C00',
-    gradient: 'linear-gradient(180deg, #221100 0%, #000000 100%)',
+    primary: '#FF9100', // More vibrant orange
+    gradient: 'linear-gradient(180deg, #331100 0%, #000000 100%)',
   },
   Dynamic: {
     primary: '#ffffff',
@@ -44,7 +44,7 @@ export const createAppTheme = (color: ThemeColor, dynamicPrimary?: string) => {
       },
       background: {
         default: '#000000',
-        paper: '#121212',
+        paper: '#1A1A1A', // Slightly lighter for better contrast
       },
       text: {
         primary: '#FFFFFF',
@@ -52,7 +52,7 @@ export const createAppTheme = (color: ThemeColor, dynamicPrimary?: string) => {
       },
     },
     typography: {
-      fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontFamily: '"Outfit", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
       h1: { fontWeight: 700 },
       h2: { fontWeight: 700 },
       h3: { fontWeight: 600 },
