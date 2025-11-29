@@ -9,13 +9,17 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { searchTracks } from '../services/api';
+import { getMoodSongs } from '../services/gemini';
 import AddToPlaylistDialog from '../components/AddToPlaylistDialog';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const Search: React.FC = () => {
   const [query, setQuery] = useState('');
+  const [moodQuery, setMoodQuery] = useState('');
+  const [isMoodSearch, setIsMoodSearch] = useState(false);
   const [results, setResults] = useState<Track[]>([]);
   const [loading, setLoading] = useState(false);
-  const { playTrack, currentTrack, toggleLike, likedSongs } = useAudio();
+  const { playTrack, currentTrack, toggleLike, likedSongs, addToQueue } = useAudio();
   
   // Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -37,6 +41,13 @@ const Search: React.FC = () => {
     setDialogOpen(true);
   };
 
+  const handleAddToQueue = () => {
+    if (selectedTrack) {
+      addToQueue(selectedTrack);
+      setAnchorEl(null);
+    }
+  };
+
   const isLiked = (trackId: number | string) => likedSongs.some(t => t.id === trackId);
 
   const handleSearch = async (e: React.KeyboardEvent) => {
@@ -53,8 +64,38 @@ const Search: React.FC = () => {
     }
   };
 
+
+  const handleMoodSearch = async () => {
+    if (!moodQuery.trim()) return;
+    
+    setLoading(true);
+    setIsMoodSearch(true);
+    setResults([]);
+    
+    try {
+      const suggestedSongs = await getMoodSongs(moodQuery);
+      console.log("Gemini suggestions:", suggestedSongs);
+      
+      const searchPromises = suggestedSongs.map(song => searchTracks(song));
+      const searchResults = await Promise.all(searchPromises);
+      
+      // Flatten and take first result from each search
+      const tracks = searchResults
+        .map(res => res[0])
+        .filter(track => track !== undefined);
+        
+      setResults(tracks);
+    } catch (error) {
+      console.error("Mood search failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClear = () => {
     setQuery('');
+    setMoodQuery('');
+    setIsMoodSearch(false);
     setResults([]);
   };
 
@@ -139,6 +180,48 @@ const Search: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Mood Search Section */}
+      <Box sx={{ mb: 6 }}>
+        <Typography variant="h5" fontWeight="bold" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <AutoAwesomeIcon sx={{ color: 'secondary.main' }} />
+          Find songs for your mood
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <InputBase
+            fullWidth
+            placeholder="How are you feeling? (e.g., 'Rainy day jazz', 'High energy workout')"
+            value={moodQuery}
+            onChange={(e) => setMoodQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleMoodSearch()}
+            sx={{
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: 2,
+              p: '10px 20px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'white',
+              flexGrow: 1,
+              '&:focus-within': {
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+              }
+            }}
+          />
+          <IconButton 
+            onClick={handleMoodSearch}
+            sx={{ 
+              bgcolor: 'secondary.main', 
+              color: 'white',
+              borderRadius: 2,
+              px: 3,
+              '&:hover': { bgcolor: 'secondary.dark' },
+              '&.Mui-disabled': { bgcolor: 'rgba(255,255,255,0.1)' }
+            }}
+            disabled={loading || !moodQuery.trim()}
+          >
+            <AutoAwesomeIcon />
+          </IconButton>
+        </Box>
+      </Box>
+
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
           <CircularProgress color="inherit" size={60} thickness={2} />
@@ -170,7 +253,7 @@ const Search: React.FC = () => {
                     alt={track.title}
                     sx={{ width: 100, height: 100, objectFit: 'cover' }} 
                   />
-                  <Box sx={{ ml: 2.5, flexGrow: 1, overflow: 'hidden', py: 2, pr: 2 }}>
+                  <Box sx={{ ml: 2.5, flexGrow: 1, overflow: 'hidden', py: 2, pr: 12 }}>
                     <Typography variant="h6" noWrap sx={{ fontSize: '1.1rem', fontWeight: 'bold', mb: 0.5 }}>{track.title}</Typography>
                     <Typography variant="body2" color="text.secondary" noWrap>{track.artist}</Typography>
                   </Box>
@@ -268,6 +351,7 @@ const Search: React.FC = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
+        <MenuItem onClick={handleAddToQueue}>Add to Queue</MenuItem>
         <MenuItem onClick={handleAddToPlaylistClick}>Add to Playlist</MenuItem>
       </Menu>
 

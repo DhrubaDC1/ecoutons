@@ -5,6 +5,8 @@ import { useAuth } from './AuthContext';
 import { useAppTheme } from './ThemeContext';
 import { doc, updateDoc, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import { getNextSongSuggestion } from '../services/gemini';
+import { searchTracks } from '../services/api';
 
 interface AudioContextType {
   currentTrack: Track | null;
@@ -29,6 +31,10 @@ interface AudioContextType {
   likedSongs: Track[];
   history: Track[];
   frequencyData: Uint8Array | null; // For visualization
+  queue: Track[];
+  addToQueue: (track: Track) => void;
+  removeFromQueue: (index: number) => void;
+  clearQueue: () => void;
 }
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
@@ -53,6 +59,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [likedSongs, setLikedSongs] = useState<Track[]>([]);
   const [history, setHistory] = useState<Track[]>([]);
   const [frequencyData, setFrequencyData] = useState<Uint8Array | null>(null);
+  const [queue, setQueue] = useState<Track[]>([]);
   
   // Player Refs
   const youtubePlayerRef = useRef<YouTubePlayer | null>(null);
@@ -166,6 +173,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setPlaylists(data.playlists || []);
         setLikedSongs(data.likedSongs || []);
         setHistory(data.history || []);
+        setQueue(data.queue || []);
       }
     });
 
@@ -252,9 +260,36 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const playNext = () => {
-    // Implement queue logic later
-    console.log("Next track");
+  const playNext = async () => {
+    // 1. Check Queue
+    if (queue.length > 0) {
+      const nextTrack = queue[0];
+      setQueue(prev => prev.slice(1));
+      playTrack(nextTrack);
+      return;
+    }
+
+    // 2. Autoplay from Gemini
+    if (currentTrack) {
+      console.log("Queue empty, fetching autoplay suggestion...");
+      try {
+        const suggestion = await getNextSongSuggestion(`${currentTrack.artist} - ${currentTrack.title}`);
+        if (suggestion) {
+          console.log("Autoplay suggestion:", suggestion);
+          const results = await searchTracks(suggestion);
+          if (results.length > 0) {
+            // Filter out current track to avoid immediate repeat if API returns same
+            const nextTrack = results[0].id !== currentTrack.id ? results[0] : results[1] || results[0];
+            playTrack(nextTrack);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error("Autoplay failed", e);
+      }
+    }
+    
+    console.log("No next track found");
   };
 
   const playPrev = () => {
@@ -289,7 +324,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const deletePlaylist = (playlistId: string | number) => {
-    const newPlaylists = playlists.filter(p => p.id !== playlistId);
+    const newPlaylists = playlists.filter(p => String(p.id) !== String(playlistId));
     setPlaylists(newPlaylists);
     saveToFirestore('playlists', newPlaylists);
   };
@@ -342,6 +377,24 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const isLiked = (trackId: string | number) => {
     return likedSongs.some(t => t.id === trackId);
+  };
+
+  const addToQueue = (track: Track) => {
+    const newQueue = [...queue, track];
+    setQueue(newQueue);
+    saveToFirestore('queue', newQueue);
+  };
+
+  const removeFromQueue = (index: number) => {
+    const newQueue = [...queue];
+    newQueue.splice(index, 1);
+    setQueue(newQueue);
+    saveToFirestore('queue', newQueue);
+  };
+
+  const clearQueue = () => {
+    setQueue([]);
+    saveToFirestore('queue', []);
   };
 
   // YouTube Player Event Handlers
@@ -398,7 +451,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       isLiked,
       likedSongs,
       history,
-      frequencyData
+      frequencyData,
+      queue,
+      addToQueue,
+      removeFromQueue,
+      clearQueue
     }}>
       {children}
       {currentTrack && isYouTube && (

@@ -7,6 +7,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { fetchTrendingMusic, searchTracks } from '../services/api';
+import { getRecommendations } from '../services/gemini';
 import AddToPlaylistDialog from '../components/AddToPlaylistDialog';
 
 const Home: React.FC = () => {
@@ -46,18 +47,24 @@ const Home: React.FC = () => {
 
         // Load Recommendations based on history
         if (history.length > 0) {
-          const artistCounts: Record<string, number> = {};
-          history.forEach(track => {
-            artistCounts[track.artist] = (artistCounts[track.artist] || 0) + 1;
-          });
-          
-          const topArtist = Object.keys(artistCounts).reduce((a, b) => artistCounts[a] > artistCounts[b] ? a : b);
-          
-          if (topArtist) {
-            const recData = await searchTracks(topArtist);
-            // Filter out songs already in history to keep recommendations fresh
-            const historyIds = new Set(history.map(h => h.id));
-            setRecommended(recData.filter(t => !historyIds.has(t.id)).slice(0, 6));
+          try {
+            const suggestions = await getRecommendations(history);
+            console.log("Gemini Recommendations:", suggestions);
+            
+            if (suggestions.length > 0) {
+              const searchPromises = suggestions.map(song => searchTracks(song));
+              const searchResults = await Promise.all(searchPromises);
+              
+              const tracks = searchResults
+                .map(res => res[0])
+                .filter(track => track !== undefined);
+                
+              // Filter out songs already in history
+              const historyIds = new Set(history.map(h => h.id));
+              setRecommended(tracks.filter(t => !historyIds.has(t.id)));
+            }
+          } catch (err) {
+            console.error("Failed to get AI recommendations", err);
           }
         }
       } catch (error) {
