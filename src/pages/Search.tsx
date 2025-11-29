@@ -16,7 +16,6 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 const Search: React.FC = () => {
   const [query, setQuery] = useState('');
   const [moodQuery, setMoodQuery] = useState('');
-  const [isMoodSearch, setIsMoodSearch] = useState(false);
   const [results, setResults] = useState<Track[]>([]);
   const [loading, setLoading] = useState(false);
   const { playTrack, currentTrack, toggleLike, likedSongs, addToQueue } = useAudio();
@@ -69,7 +68,6 @@ const Search: React.FC = () => {
     if (!moodQuery.trim()) return;
     
     setLoading(true);
-    setIsMoodSearch(true);
     setResults([]);
     
     try {
@@ -95,7 +93,6 @@ const Search: React.FC = () => {
   const handleClear = () => {
     setQuery('');
     setMoodQuery('');
-    setIsMoodSearch(false);
     setResults([]);
   };
 
