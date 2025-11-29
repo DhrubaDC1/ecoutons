@@ -7,11 +7,14 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 
 import PlaylistThumbnail from '../components/PlaylistThumbnail';
+import { generatePlaylistCoverPrompt, generateImage } from '../services/gemini';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { CircularProgress } from '@mui/material';
 
 const Playlist: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { playlists, deletePlaylist, removeFromPlaylist, playTrack, updatePlaylist } = useAudio();
+  const { playlists, deletePlaylist, removeFromPlaylist, playTrack, updatePlaylist, addToQueue } = useAudio();
   
   // Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -22,6 +25,7 @@ const Playlist: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
   const [editCover, setEditCover] = useState('');
+  const [generatingCover, setGeneratingCover] = useState(false);
 
   const playlist = playlists.find(p => p.id === Number(id) || p.id === id);
 
@@ -59,6 +63,24 @@ const Playlist: React.FC = () => {
     }
   };
 
+  const handleGenerateCover = async () => {
+    if (playlist.tracks.length === 0) {
+      alert("Add some songs to the playlist first!");
+      return;
+    }
+    
+    setGeneratingCover(true);
+    try {
+      const prompt = await generatePlaylistCoverPrompt(playlist.tracks);
+      const imageUrl = generateImage(prompt);
+      setEditCover(imageUrl);
+    } catch (error) {
+      console.error("Failed to generate cover", error);
+    } finally {
+      setGeneratingCover(false);
+    }
+  };
+
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, trackId: string | number) => {
     setAnchorEl(event.currentTarget);
     setSelectedTrackId(trackId);
@@ -72,6 +94,16 @@ const Playlist: React.FC = () => {
   const handleRemoveTrack = () => {
     if (selectedTrackId) {
       removeFromPlaylist(playlist.id, selectedTrackId);
+      handleMenuClose();
+    }
+  };
+
+  const handleAddToQueue = () => {
+    if (selectedTrackId) {
+      const track = playlist.tracks.find(t => t.id === selectedTrackId);
+      if (track) {
+        addToQueue(track);
+      }
       handleMenuClose();
     }
   };
@@ -135,6 +167,7 @@ const Playlist: React.FC = () => {
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
+        <MenuItem onClick={handleAddToQueue}>Add to Queue</MenuItem>
         <MenuItem onClick={handleRemoveTrack}>Remove from Playlist</MenuItem>
       </Menu>
 
@@ -164,6 +197,15 @@ const Playlist: React.FC = () => {
               fullWidth
               placeholder="https://example.com/image.jpg"
             />
+            <Button 
+              startIcon={generatingCover ? <CircularProgress size={20} color="inherit" /> : <AutoAwesomeIcon />}
+              onClick={handleGenerateCover}
+              disabled={generatingCover || playlist.tracks.length === 0}
+              variant="outlined"
+              color="secondary"
+            >
+              {generatingCover ? "Dreaming up cover..." : "Generate AI Cover"}
+            </Button>
           </Box>
         </DialogContent>
         <DialogActions>

@@ -5,14 +5,17 @@ import PauseCircleFilledIcon from '@mui/icons-material/PauseCircleFilled';
 import SkipPreviousIcon from '@mui/icons-material/SkipPrevious';
 import SkipNextIcon from '@mui/icons-material/SkipNext';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import QueueMusicIcon from '@mui/icons-material/QueueMusic';
 import GlassCard from './GlassCard';
 import { useAudio } from '../context/AudioContext';
+import QueueList from './QueueList';
 
 import FullScreenPlayer from './FullScreenPlayer';
 
 const Player: React.FC = () => {
   const { currentTrack, isPlaying, togglePlay, playNext, playPrev, volume, setVolume, currentTime, seekTo, duration } = useAudio();
   const [isFullScreen, setIsFullScreen] = React.useState(false);
+  const [isQueueOpen, setIsQueueOpen] = React.useState(false);
 
   const formatTime = (time: number) => {
     const minutes = Math.floor(time / 60);
@@ -122,6 +125,9 @@ const Player: React.FC = () => {
       </Box>
 
       <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', width: '30%', justifyContent: 'flex-end' }}>
+        <IconButton onClick={() => setIsQueueOpen(true)} color="inherit" sx={{ mr: 2 }}>
+          <QueueMusicIcon />
+        </IconButton>
         <Stack direction="row" spacing={2} alignItems="center" sx={{ width: 150 }}>
           <VolumeUpIcon />
           <Slider 
@@ -135,6 +141,7 @@ const Player: React.FC = () => {
       </GlassCard>
 
       <FullScreenPlayer open={isFullScreen} onClose={() => setIsFullScreen(false)} />
+      <QueueList open={isQueueOpen} onClose={() => setIsQueueOpen(false)} />
     </>
   );
 };
